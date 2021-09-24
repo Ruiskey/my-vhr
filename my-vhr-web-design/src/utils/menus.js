@@ -15,7 +15,7 @@ export const initMenu = (router, store) => {
 
 export const formatRoutes = (routes) => {
     let fmtRoutes = [];
-    routes.forEach(routes => {
+    routes.forEach(router => {
         let {
             path,
             component,

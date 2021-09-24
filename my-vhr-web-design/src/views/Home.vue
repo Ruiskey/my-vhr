@@ -19,13 +19,14 @@
         <el-aside width="200px">
           <el-menu
              router
+             unique-opened
               background-color="#545c64"
               text-color="#fff"
               active-text-color="#ffd04b">
-            <el-submenu index="1" v-for="(item, index) in this.$router.options.routes" v-if="!item.hidden"
+            <el-submenu :index='index+""' v-for="(item, index) in routes" v-if="!item.hidden"
             :key="index">
               <template slot="title">
-                <i class="el-icon-location"></i>
+                <i :class="item.iconCls" style="color: #8212a8;margin-right: 5px"></i>
                 <span>{{item.name}}</span>
               </template>
               <el-menu-item :index="child.path" v-for="(child, indexj) in item.children" :key="indexj">
@@ -51,10 +52,12 @@ export default {
       user: JSON.parse(window.sessionStorage.getItem("user"))
     }
   },
+  computed: {
+    routes() {
+      return this.$store.state.routes;
+    }
+  },
   methods: {
-    menuClick(index) {
-      this.$router.push(index);
-    },
     commandHandler(cmd) {
       if (cmd == 'logout') {
         this.$confirm('此操作将注销登录, 是否继续?', '提示', {
@@ -65,6 +68,7 @@ export default {
           this.getRequest("/logout");
           // 将已登录的用户数据清空
           window.sessionStorage.removeItem("user")
+          this.$store.commit('initRoutes', []);
           this.$router.replace("/")
           // this.$message({
           //   type: 'success',
