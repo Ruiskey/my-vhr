@@ -39,8 +39,9 @@ export default {
             if (resp) {
               // alert(JSON.stringify(resp.obj))
               window.sessionStorage.setItem("user", JSON.stringify(resp.obj));
+              let path = this.$route.query.redirect;
               //获取当前页面中的router对象
-              this.$router.replace('/home')
+              this.$router.replace((path == '/' || path == undefined) ? '/home' : path);
             }
           })
         } else {
