@@ -1,12 +1,50 @@
 <template>
   <div>
-    基础信息设置
+    <el-tabs v-model="activeName" type="card">
+      <el-tab-pane label="部门管理" name="first">
+        <DepMag></DepMag>
+      </el-tab-pane>
+      <el-tab-pane label="职位管理" name="second">
+        <PosMag>
+        </PosMag>
+      </el-tab-pane>
+      <el-tab-pane label="职称管理" name="third">
+        <JobLevelMag></JobLevelMag>
+      </el-tab-pane>
+      <el-tab-pane label="奖惩规则" name="fourth">
+        <EcMag></EcMag>
+      </el-tab-pane>
+      <el-tab-pane label="权限组" name="five">
+        <PermissMag></PermissMag>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
 <script>
+import DepMag from "../../components/sys/basic/DepMag"
+import PosMag from "../../components/sys/basic/PosMag"
+import JobLevelMag from "../../components/sys/basic/JobLevelMag"
+import EcMag from "../../components/sys/basic/EcMag"
+import PermissMag from "../../components/sys/basic/PermissMag"
 export default {
-  name: "SysBasic"
+  name: "SysBasic",
+  data() {
+    return {
+      activeName: 'first'
+    };
+  },
+  components: {
+    // key 和 value是一样的所以可以简写成一个
+    'DepMag': DepMag,
+    'PosMag': PosMag,
+    'JobLevelMag': JobLevelMag,
+    EcMag,
+    PermissMag,
+  },
+  methods: {
+
+  }
 }
 </script>
 
