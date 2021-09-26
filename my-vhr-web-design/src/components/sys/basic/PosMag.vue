@@ -54,6 +54,19 @@
         </el-table-column>
       </el-table>
     </div>
+    <el-dialog
+        title="修改职位"
+        :visible.sync="dialogVisible"
+        width="30%">
+      <div>
+        <el-tag>职位名称</el-tag>
+        <el-input size="small" class="updatePosInput" v-model="updatePos.name"></el-input>
+      </div>
+      <span slot="footer" class="dialog-footer">
+    <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+    <el-button size="small" type="primary" @click="handleUpdate">确 定</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -65,7 +78,11 @@ export default {
       pos: {
         name: ''
       },
-      position: []
+      position: [],
+      updatePos: {
+        name: '',
+      },
+      dialogVisible: false
     }
   },
   mounted() {
@@ -80,7 +97,10 @@ export default {
       })
     },
     handleEdit(index, data) {
-
+      // this.updatePos = data;
+      // 利用拷贝的思路来解决问题，不然点击取消data的值也会改变
+      Object.assign(this.updatePos, data)
+      this.dialogVisible = true;
     },
     handleDelete(index, data) {
       this.$confirm('此操作将永久删除' + data.name + '职位, 是否继续?', '提示', {
@@ -112,6 +132,15 @@ export default {
       } else {
         this.$message.error("职位名称不可以为空！");
       }
+    },
+    handleUpdate() {
+      this.putRequest("/system/basic/pos/", this.updatePos).then(resp=>{
+        if (resp) {
+          this.initPositions();
+          this.updatePos.name = '';
+          this.dialogVisible = false;
+        }
+      })
     }
   }
 }
@@ -125,5 +154,10 @@ export default {
 
 .posMagMain {
   margin-top: 7px;
+}
+
+.updatePosInput {
+  width: 200px;
+  margin-left: 10px;
 }
 </style>
