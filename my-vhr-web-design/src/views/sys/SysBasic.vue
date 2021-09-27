@@ -31,7 +31,7 @@ export default {
   name: "SysBasic",
   data() {
     return {
-      activeName: 'joblevelmag'
+      activeName: 'permissmag'
     };
   },
   components: {
