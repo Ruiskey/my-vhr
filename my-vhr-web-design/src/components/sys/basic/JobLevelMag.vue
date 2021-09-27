@@ -17,12 +17,15 @@
             :value="item">
         </el-option>
       </el-select>
-      <el-button icon="el-icon-plus" size="small" style="background-color: #42b983; margin-left: 5px" @click="addJobLevel">添加</el-button>
+      <el-button icon="el-icon-plus" size="small" style="background-color: #42b983; margin-left: 5px"
+                 @click="addJobLevel">添加
+      </el-button>
     </div>
     <div>
       <el-table
           :data="levels"
           size="small"
+          @selection-change="handleSelectionChange"
           border
           stripe
           style="width: 50%">
@@ -38,12 +41,12 @@
         <el-table-column
             prop="name"
             label="职称名称"
-            >
+        >
         </el-table-column>
         <el-table-column
             prop="titleLevel"
             label="职称等级"
-            >
+        >
         </el-table-column>
         <el-table-column
             prop="createDate"
@@ -79,11 +82,17 @@
         <div>
           <table>
             <tr>
-              <td><el-tag>职称名</el-tag></td>
-              <td><el-input size="small" v-model="updateJobLevel.name"></el-input></td>
+              <td>
+                <el-tag>职称名</el-tag>
+              </td>
+              <td>
+                <el-input size="small" v-model="updateJobLevel.name"></el-input>
+              </td>
             </tr>
             <tr>
-              <td><el-tag>职称级别</el-tag></td>
+              <td>
+                <el-tag>职称级别</el-tag>
+              </td>
               <td>
                 <el-select v-model="updateJobLevel.titleLevel" placeholder="职称等级" size="small" style="margin-left: 5px">
                   <el-option
@@ -96,7 +105,9 @@
               </td>
             </tr>
             <tr>
-              <td><el-tag>是否启用</el-tag></td>
+              <td>
+                <el-tag>是否启用</el-tag>
+              </td>
               <td>
                 <el-switch
                     v-model="updateJobLevel.enabled"
@@ -113,7 +124,7 @@
         </span>
       </el-dialog>
       <el-button type="danger" size="small" style="margin-top: 8px"
-                 @click="deleteMultiple">批量删除
+                 @click="deleteMultiple" :disabled="multipleSelection.length==0">批量删除
       </el-button>
     </div>
   </div>
@@ -128,9 +139,8 @@ export default {
         name: '',
         titleLevel: '',
       },
-      levels: [
-
-      ],
+      levels: [],
+      multipleSelection: [],
       updateJobLevel: {
         name: '',
         titleLevel: '',
@@ -138,11 +148,11 @@ export default {
       },
       dialogVisible: false,
       titleLevels: [
-          '正高级',
-          '副高级',
-          '中级',
-          '初级',
-          '员级'
+        '正高级',
+        '副高级',
+        '中级',
+        '初级',
+        '员级'
       ],
     }
   },
@@ -151,18 +161,21 @@ export default {
   },
   methods: {
     initJobLevels() {
-      this.getRequest("/system/basic/joblevel/").then(resp=>{
+      this.getRequest("/system/basic/joblevel/").then(resp => {
         if (resp) {
           this.levels = resp;
         }
       })
+    },
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
     },
     handleEdit(index, data) {
       Object.assign(this.updateJobLevel, data);
       this.dialogVisible = true;
     },
     handleUpdate() {
-      this.putRequest("/system/basic/joblevel/", this.updateJobLevel).then(resp=>{
+      this.putRequest("/system/basic/joblevel/", this.updateJobLevel).then(resp => {
         if (resp) {
           this.initJobLevels();
           this.updateJobLevel.name = '';
@@ -191,7 +204,26 @@ export default {
       });
     },
     deleteMultiple() {
-
+      this.$confirm('此操作将永久删除' + this.multipleSelection.length + '条记录, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        let ids = "?";
+        this.multipleSelection.forEach(item => {
+          ids += 'ids=' + item.id + '&';
+        })
+        this.deleteRequest('/system/basic/joblevel/'+ids).then(resp => {
+          if (resp) {
+            this.initJobLevels();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     },
     addJobLevel() {
       if (this.jobLevel.name && this.jobLevel.titleLevel) {
@@ -211,8 +243,8 @@ export default {
 </script>
 
 <style scoped>
-  .addJobLevelInput {
-    width: 400px;
-    margin-right: 5px
-  }
+.addJobLevelInput {
+  width: 400px;
+  margin-right: 5px
+}
 </style>
