@@ -1,20 +1,20 @@
 <template>
   <div>
     <el-tabs v-model="activeName" type="card">
-      <el-tab-pane label="部门管理" name="first">
+      <el-tab-pane label="部门管理" name="depmag">
         <DepMag></DepMag>
       </el-tab-pane>
-      <el-tab-pane label="职位管理" name="second">
+      <el-tab-pane label="职位管理" name="posmag">
         <PosMag>
         </PosMag>
       </el-tab-pane>
-      <el-tab-pane label="职称管理" name="third">
+      <el-tab-pane label="职称管理" name="joblevelmag">
         <JobLevelMag></JobLevelMag>
       </el-tab-pane>
-      <el-tab-pane label="奖惩规则" name="fourth">
+      <el-tab-pane label="奖惩规则" name="ecmag">
         <EcMag></EcMag>
       </el-tab-pane>
-      <el-tab-pane label="权限组" name="five">
+      <el-tab-pane label="权限组" name="permissmag">
         <PermissMag></PermissMag>
       </el-tab-pane>
     </el-tabs>
@@ -31,7 +31,7 @@ export default {
   name: "SysBasic",
   data() {
     return {
-      activeName: 'first'
+      activeName: 'joblevelmag'
     };
   },
   components: {
