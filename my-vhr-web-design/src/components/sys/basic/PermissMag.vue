@@ -4,8 +4,8 @@
       <el-input size="small" placeholder="请输入角色英文名" v-model="role.name">
         <template slot="prepend">ROLE_</template>
       </el-input>
-      <el-input size="small" placeholder="请输入角色中问名" v-model="role.nameZh"></el-input>
-      <el-button size="small" icon="el-icon-plus" type="primary">添加角色</el-button>
+      <el-input size="small" placeholder="请输入角色中问名" v-model="role.nameZh" @keydown.enter.native="doAddRole"></el-input>
+      <el-button size="small" icon="el-icon-plus" type="primary" @click="doAddRole">添加角色</el-button>
     </div>
     <div style="margin-top: 10px; width: 900px">
       <el-collapse v-model="activeName" accordion @change="change">
@@ -14,13 +14,14 @@
             <div slot="header" class="clearfix">
               <span>可访问的资源</span>
               <el-button style="float: right; padding: 3px 0; color: #42b983" icon="el-icon-delete"
-                         type="text"></el-button>
+                         type="text" @click="deleteRole(r)"></el-button>
             </div>
             <div>
               <el-tree
                   show-checkbox
                   node-key="id"
                   ref="tree"
+                  :key="index"
                   :default-checked-keys="selectedMenus"
                   :data="allMenus" :props="defaultProps"></el-tree>
               <div style="display: flex;justify-content: flex-end">
@@ -60,6 +61,40 @@ export default {
     this.initRoles();
   },
   methods: {
+    // 删除角色
+    deleteRole(role) {
+      this.$confirm('此操作将永久删除' + role.nameZh + ', 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteRequest("/system/basic/permiss/role/"+role.id).then(resp=>{
+          if (resp) {
+            this.initRoles();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
+    doAddRole() {
+      if (this.role.name && this.role.nameZh) {
+        this.postRequest("/system/basic/permiss/role", this.role).then(resp => {
+          if (resp) {
+            this.initRoles()
+            this.role.name = ''
+            this.role.nameZh = ''
+          }
+        })
+      } else {
+        this.$message.error("数据不可以为空!")
+      }
+
+
+    },
     change(rid) {
       if (rid) {
         this.initAllMenus();
@@ -91,12 +126,11 @@ export default {
       // (leafOnly) 接收一个 boolean 类型的参数，若为 true 则仅返回被选中的叶子节点的 keys，默认值为 false
       let selectedKeys = tree.getCheckedKeys(true);
       let url = '/system/basic/permiss/?rid=' + rid + '&';
-      selectedKeys.forEach(key=>{
+      selectedKeys.forEach(key => {
         url += '&mids=' + key;
       })
-      this.putRequest(url).then(resp=>{
+      this.putRequest(url).then(resp => {
         if (resp) {
-          this.initRoles();
           this.activeName = -1;
         }
       })
