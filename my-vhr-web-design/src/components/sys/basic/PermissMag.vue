@@ -8,10 +8,19 @@
       <el-button size="small" icon="el-icon-plus" type="primary">添加角色</el-button>
     </div>
     <div style="margin-top: 10px; width: 900px">
-      <el-collapse v-model="activeName" accordion>
-        <el-collapse-item title="一致性 Consistency" name="1">
-          <div>与现实生活一致：与现实生活的流程、逻辑保持一致，遵循用户习惯的语言和概念；</div>
-          <div>在界面中一致：所有的元素和结构需保持一致，比如：设计样式、图标和文本、元素的位置等。</div>
+      <el-collapse v-model="activeName" accordion @change="change">
+        <el-collapse-item :title="r.nameZh" :name="r.id" v-for="(r, index) in roles" :key="index">
+          <el-card class="box-card">
+            <div slot="header" class="clearfix">
+              <span>可访问的资源</span>
+              <el-button style="float: right; padding: 3px 0; color: #42b983" icon="el-icon-delete" type="text"></el-button>
+            </div>
+            <div>
+              <el-tree
+                  show-checkbox
+                  :data="allMenus" :props="defaultProps"></el-tree>
+            </div>
+          </el-card>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -19,6 +28,8 @@
 </template>
 
 <script>
+import {initMenu} from "../../../utils/menus";
+
 export default {
   name: "PermissMag",
   data() {
@@ -27,7 +38,37 @@ export default {
       role: {
         name: '',
         nameZh: ''
+      },
+      roles: [],
+      allMenus: [],
+      defaultProps: {
+        children: 'children',
+        label: 'name'
       }
+    }
+  },
+  mounted() {
+    this.initRoles();
+  },
+  methods: {
+    change(name) {
+      if (name) {
+        this.initAllMenus();
+      }
+    },
+    initAllMenus() {
+      this.getRequest("/system/basic/permiss/menus/").then(resp=>{
+        if (resp) {
+          this.allMenus = resp;
+        }
+      })
+    },
+    initRoles() {
+      this.getRequest("/system/basic/permiss/").then(resp=>{
+        if (resp) {
+          this.roles = resp;
+        }
+      })
     }
   }
 }
@@ -39,7 +80,7 @@ export default {
     justify-content: flex-start;
   }
   .permissManageTool .el-input{
-    width: 200px;
+    width: 400px;
     margin-right: 8px;
   }
 </style>
