@@ -13,12 +13,20 @@
           <el-card class="box-card">
             <div slot="header" class="clearfix">
               <span>可访问的资源</span>
-              <el-button style="float: right; padding: 3px 0; color: #42b983" icon="el-icon-delete" type="text"></el-button>
+              <el-button style="float: right; padding: 3px 0; color: #42b983" icon="el-icon-delete"
+                         type="text"></el-button>
             </div>
             <div>
               <el-tree
                   show-checkbox
+                  node-key="id"
+                  ref="tree"
+                  :default-checked-keys="selectedMenus"
                   :data="allMenus" :props="defaultProps"></el-tree>
+              <div style="display: flex;justify-content: flex-end">
+                <el-button @click="cancelUpdate">取消修改</el-button>
+                <el-button type="primary" @click="doUpdate(r.id, index)">确认修改</el-button>
+              </div>
             </div>
           </el-card>
         </el-collapse-item>
@@ -33,14 +41,15 @@ import {initMenu} from "../../../utils/menus";
 export default {
   name: "PermissMag",
   data() {
-    return{
-      activeName: "1",
+    return {
+      activeName: -1,
       role: {
         name: '',
         nameZh: ''
       },
       roles: [],
       allMenus: [],
+      selectedMenus: [],
       defaultProps: {
         children: 'children',
         label: 'name'
@@ -51,36 +60,62 @@ export default {
     this.initRoles();
   },
   methods: {
-    change(name) {
-      if (name) {
+    change(rid) {
+      if (rid) {
         this.initAllMenus();
+        this.initSelectedMenus(rid);
       }
     },
+    initSelectedMenus(rid) {
+      this.getRequest("/system/basic/permiss/mids/" + rid).then(resp => {
+        this.selectedMenus = resp;
+      })
+    },
     initAllMenus() {
-      this.getRequest("/system/basic/permiss/menus/").then(resp=>{
+      this.getRequest("/system/basic/permiss/menus/").then(resp => {
         if (resp) {
           this.allMenus = resp;
         }
       })
     },
     initRoles() {
-      this.getRequest("/system/basic/permiss/").then(resp=>{
+      this.getRequest("/system/basic/permiss/").then(resp => {
         if (resp) {
           this.roles = resp;
         }
       })
+    },
+    // 传入index,这样才能知道传入的是第几个
+    doUpdate(rid, index) {
+      let tree = this.$refs.tree[index];
+      // (leafOnly) 接收一个 boolean 类型的参数，若为 true 则仅返回被选中的叶子节点的 keys，默认值为 false
+      let selectedKeys = tree.getCheckedKeys(true);
+      let url = '/system/basic/permiss/?rid=' + rid + '&';
+      selectedKeys.forEach(key=>{
+        url += '&mids=' + key;
+      })
+      this.putRequest(url).then(resp=>{
+        if (resp) {
+          this.initRoles();
+          this.activeName = -1;
+        }
+      })
+    },
+    cancelUpdate() {
+      this.activeName = -1;
     }
   }
 }
 </script>
 
 <style>
-  .permissManageTool {
-    display: flex;
-    justify-content: flex-start;
-  }
-  .permissManageTool .el-input{
-    width: 400px;
-    margin-right: 8px;
-  }
+.permissManageTool {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.permissManageTool .el-input {
+  width: 400px;
+  margin-right: 8px;
+}
 </style>
