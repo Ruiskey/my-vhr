@@ -11,8 +11,28 @@
         :data="deps"
         :props="defaultProps"
         default-expand-all
+        :expand-on-click-node="false"
         :filter-node-method="filterNode"
         ref="tree">
+      <span class="custom-tree-node" slot-scope="{ node, data }" style="display: flex; justify-content: space-between; width: 100%">
+        <span>{{ data.name }}</span>
+        <span>
+          <el-button
+              type="primary"
+              size="mini"
+              style="height: 7px"
+              @click="() => showAddDepView(data)">
+            添加部门
+          </el-button>
+          <el-button
+              type="danger"
+              size="mini"
+              style="height: 10px"
+              @click="() => deleteDep(data)">
+            删除部门
+          </el-button>
+        </span>
+      </span>
     </el-tree>
   </div>
 </template>
@@ -40,8 +60,14 @@ export default {
     this.initDeps();
   },
   methods: {
+    deleteDep(data) {
+      console.log(data)
+    },
+    showAddDepView(data) {
+      console.log(data)
+    },
     initDeps() {
-      this.getRequest("/system/basic/department/").then(resp=>{
+      this.getRequest("/system/basic/department/").then(resp => {
         if (resp) {
           this.deps = resp;
         }
@@ -56,5 +82,7 @@ export default {
 </script>
 
 <style scoped>
-
+.depBtn {
+  padding: 20px;
+}
 </style>
