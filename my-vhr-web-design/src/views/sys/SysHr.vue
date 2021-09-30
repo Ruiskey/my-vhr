@@ -2,41 +2,59 @@
   <div>
     <div style="margin-top: 10px; display: flex; justify-content: center">
       <el-input v-model="keywords" placeholder="通过用户名搜索用户.." prefix-icon="el-icon-search"
-                style="width: 500px; margin-right: 10px">
+                style="width: 500px; margin-right: 10px" @keydown.enter.native="doSearch">
       </el-input>
-      <el-button icon="el-icon-search" type="primary">搜索</el-button>
+      <el-button icon="el-icon-search" type="primary" @click="doSearch">搜索</el-button>
     </div>
     <div class="hr-container">
       <el-card class="hr-card" v-for="(hr,index) in hrs" :key="index">
         <div slot="header" class="clearfix">
-          <span>{{hr.name}}</span>
+          <span>{{ hr.name }}</span>
           <el-button style="float: right; padding: 3px 0; color: red" type="text" icon="el-icon-delete"></el-button>
         </div>
         <div>
           <div class="img-container">
             <img :src="hr.userface" :alt="hr.name" :title="hr.name" class="userface-img"/>
           </div>
-<!--          存放个人文本信息-->
+          <!--          存放个人文本信息-->
           <div class="userinfo-container">
-            <div>用户名: {{hr.name}}</div>
-            <div>手机号码: {{hr.phone}}</div>
-            <div>电话号码: {{hr.telephone}}</div>
-            <div>地址: {{hr.address}}</div>
+            <div>用户名: {{ hr.name }}</div>
+            <div>手机号码: {{ hr.phone }}</div>
+            <div>电话号码: {{ hr.telephone }}</div>
+            <div>地址: {{ hr.address }}</div>
             <div>用户状态:
               <el-switch
-                v-model="hr.enabled"
-                active-text="启用"
-                inactive-text="禁用"
-                @change="enableChange(hr)"
-                active-color="#13ce66"
-                inactive-color="#ff4949">
-            </el-switch>
+                  v-model="hr.enabled"
+                  active-text="启用"
+                  inactive-text="禁用"
+                  @change="enableChange(hr)"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949">
+              </el-switch>
             </div>
             <div>用户角色:
               <el-tag type="success" style="margin-right: 3px" v-for="(role,indexj) in hr.roles" :key="indexj">
-                {{role.nameZh}}
+                {{ role.nameZh }}
               </el-tag>
-              <el-button icon="el-icon-more" type="text"></el-button>
+              <el-popover
+                  placement="right"
+                  title="角色列表"
+                  @show="showPop(hr)"
+                  @hide="hidePop(hr)"
+                  width="200"
+                  trigger="click"
+                  content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。">
+                <el-select v-model="selectedRoles" multiple placeholder="请选择">
+                  <el-option
+                      v-for="(r, indexk) in allroles"
+                      :key="indexk"
+                      :label="r.nameZh"
+                      :value="r.id">
+                  </el-option>
+                </el-select>
+                <el-button slot="reference" icon="el-icon-more" type="text"></el-button>
+              </el-popover>
+
             </div>
             <div>
               备注
@@ -54,23 +72,77 @@ export default {
   data() {
     return {
       keywords: '',
-      hrs: []
+      hrs: [],
+      allroles: [],
+      selectedRoles: []
     }
   },
   mounted() {
     this.initHrs();
   },
   methods: {
+    doSearch() {
+      this.initHrs();
+    },
+    hidePop(hr) {
+      let roles = [];
+      Object.assign(roles, hr.roles);
+      let flag = false;
+      if (roles.length != this.selectedRoles.length) {
+        flag = true;
+      } else {
+        for (let i = 0; i < roles.length; i++) {
+          let role = roles[i];
+          for (let j = 0; j < this.selectedRoles.length; j++) {
+            let sr = this.selectedRoles[j];
+            if (role.id == sr) {
+              roles.splice(i, 1);
+              i--;
+              break;
+            }
+          }
+        }
+        if (roles.length != 0) {
+          flag = true;
+        }
+      }
+      if (flag) {
+        let url = '/system/hr/role?hrid=' + hr.id;
+        this.selectedRoles.forEach(sr => {
+          url += '&rids=' + sr;
+        })
+        this.putRequest(url).then(resp => {
+          if (resp) {
+            this.initHrs();
+          }
+        })
+      }
+    },
+    showPop(hr) {
+      this.initAllRoles();
+      let roles = hr.roles;
+      this.selectedRoles = [];
+      roles.forEach(r => {
+        this.selectedRoles.push(r.id);
+      })
+    },
+    initAllRoles() {
+      this.getRequest("/system/hr/roles").then(resp => {
+        if (resp) {
+          this.allroles = resp;
+        }
+      })
+    },
     enableChange(hr) {
       delete hr.roles;
-      this.putRequest("/system/hr/", hr).then(resp=>{
+      this.putRequest("/system/hr/", hr).then(resp => {
         if (resp) {
           this.initHrs();
         }
       })
     },
     initHrs() {
-      this.getRequest("/system/hr/").then(resp => {
+      this.getRequest("/system/hr/?keywords=" + this.keywords).then(resp => {
         if (resp) {
           this.hrs = resp;
         }
@@ -86,21 +158,25 @@ export default {
   height: 72px;
   border-radius: 72px;
 }
+
 .hr-card {
   width: 350px;
   margin-bottom: 20px;
 }
-.hr-container{
+
+.hr-container {
   margin-top: 30px;
   display: flex;
   flex-flow: wrap;
   justify-content: space-around;
 }
+
 .img-container {
   width: 100%;
   display: flex;
   justify-content: center;
 }
+
 .userinfo-container {
   margin-top: 20px;
 }
