@@ -2,7 +2,8 @@
   <div>
     <div style="display: flex; justify-content: space-between">
       <div>
-        <el-input placeholder="请输入员工名进行搜索, 可以直接回车搜索..." icon="el-icon-search" style="width: 300px; margin-right: 4px"></el-input>
+        <el-input placeholder="请输入员工名进行搜索, 可以直接回车搜索..." icon="el-icon-search"
+                  style="width: 300px; margin-right: 4px"></el-input>
         <el-button icon="el-icon-search" type="primary">搜索</el-button>
         <el-button type="primary">
           <i class="fa fa-angle-double-down" aria-hidden="true"></i>
@@ -147,7 +148,8 @@
             align="left"
             label="合同期限">
           <template slot-scope="scope">
-            <el-tag>{{scope.row.contractTerm}}</el-tag>年
+            <el-tag>{{ scope.row.contractTerm }}</el-tag>
+            年
           </template>
         </el-table-column>
         <el-table-column
@@ -167,6 +169,15 @@
 
 
       </el-table>
+      <div style="display: flex;justify-content: flex-end">
+        <el-pagination
+            background
+            @current-change="currentChange"
+            @size-change="sizeChange"
+            layout="sizes, prev, pager, next, jumper, ->, total, slot"
+            :total="total">
+        </el-pagination>
+      </div>
     </div>
   </div>
 </template>
@@ -176,17 +187,29 @@ export default {
   name: "EmpBasic",
   data() {
     return {
-      emps: []
+      emps: [],
+      total: 0,
+      page: 1,
+      size: 10
     }
   },
   mounted() {
     this.initEmps();
   },
   methods: {
+    sizeChange(currentSize) {
+      this.size = currentSize;
+      this.initEmps();
+    },
+    currentChange(currentPage) {
+      this.page = currentPage;
+      this.initEmps();
+    },
     initEmps() {
-      this.getRequest("/emp/basic/").then(resp=>{
+      this.getRequest("/emp/basic/?page=" + this.page + "&size=" + this.size).then(resp => {
         if (resp) {
           this.emps = resp.data;
+          this.total = resp.total;
         }
       })
     }
