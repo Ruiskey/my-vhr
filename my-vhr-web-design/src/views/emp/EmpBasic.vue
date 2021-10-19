@@ -285,8 +285,22 @@
             </el-col>
             <el-col :span="6">
               <el-form-item label="所属部门:" prop="departmentId">
-                <el-input size="mini" prefix-icon="el-icon-edit" v-model="emp.departmentId" placeholder="所属部门"
-                          style="width: 150px"/>
+                <!--                <el-input size="mini" prefix-icon="el-icon-edit" v-model="emp.departmentId" placeholder="所属部门"
+                                          style="width: 150px"/>-->
+                <el-popover
+                    placement="bottom"
+                    title="标题"
+                    width="200"
+                    trigger="manual"
+                    content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。"
+                    v-model="popVisible">
+                  <el-tree :data="allDeps" :props="defaultProps" @node-click="handleNodeClick" default-expand-all></el-tree>
+                  <div slot="reference" style="width: 150px; height: 26px; border-radius: 5px; display: inline-flex;
+                      font-size: 13px;border: 1px solid #dedede; cursor: pointer; align-items: center;
+                      padding-left: 8px; box-sizing: border-box" @click="showDepView">
+                    {{inputDepName}}
+                  </div>
+                </el-popover>
               </el-form-item>
             </el-col>
             <el-col :span="7">
@@ -300,7 +314,7 @@
             <el-col :span="6">
               <el-form-item label="工号:" prop="workID">
                 <el-input size="mini" prefix-icon="el-icon-edit" v-model="emp.workID" placeholder="工号"
-                          style="width: 150px"/>
+                          style="width: 150px" disabled/>
               </el-form-item>
             </el-col>
             <el-col :span="5">
@@ -407,7 +421,7 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="doAddEmp">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -419,11 +433,13 @@ export default {
   data() {
     return {
       emps: [],
+      allDeps: [],
       total: 0,
       page: 1,
       size: 10,
       keyword: '',
       dialogVisible: false,
+      popVisible: false,
       nations: [],
       jobLevels: [],
       politicsStatus: [],
@@ -448,6 +464,7 @@ export default {
         label: '北京烤鸭'
       }],
       value: '',
+      inputDepName: '',
       emp: {
         name: "ruiscoder",
         gender: "男",
@@ -476,6 +493,10 @@ export default {
         beginContract: "2018-01-01",
         endContract: "2020-01-01",
         workAge: null
+      },
+      defaultProps: {
+        children: 'children',
+        label: 'name'
       }
     }
   },
@@ -484,6 +505,30 @@ export default {
     this.initData();
   },
   methods: {
+    doAddEmp() {
+      this.postRequest("/emp/basic/", this.emp).then(resp=>{
+        if (resp) {
+          this.dialogVisible = false;
+          this.initEmps();
+        }
+      })
+    },
+    handleNodeClick(data) {
+      this.popVisible = !this.popVisible;
+      this.emp.departmentId = data.id;
+      this.inputDepName = data.name;
+    },
+    showDepView() {
+      this.popVisible = !this.popVisible;
+    },
+    getMaxWordID() {
+      this.getRequest("/emp/basic/maxWorkID").then(resp => {
+        if (resp) {
+          this.emp.workID = resp.obj;
+        }
+      })
+    },
+
     initPositions() {
       this.getRequest("/emp/basic/positions").then(resp => {
         if (resp) {
@@ -497,28 +542,48 @@ export default {
         this.getRequest("/emp/basic/nations").then(resp => {
           if (resp) {
             this.nations = resp;
+            window.sessionStorage.setItem("nations", JSON.stringify(resp));
           }
         })
+      }else{
+        this.nations = JSON.parse(window.sessionStorage.getItem("nations"))
       }
-      ;
+
       if (!window.sessionStorage.getItem("politicsStatus")) {
         this.getRequest("/emp/basic/politicsStatus").then(resp => {
           if (resp) {
             this.politicsStatus = resp;
+            window.sessionStorage.setItem("politicsStatus", JSON.stringify(resp));
           }
         })
+      }else{
+        this.politicsStatus = JSON.parse(window.sessionStorage.getItem("politicsStatus"))
       }
-      ;
       if (!window.sessionStorage.getItem("jobLevels")) {
         this.getRequest("/emp/basic/jobLevels").then(resp => {
           if (resp) {
             this.jobLevels = resp;
+            window.sessionStorage.setItem("jobLevels", JSON.stringify(resp));
           }
         })
+      }else{
+        this.jobLevels = JSON.parse(window.sessionStorage.getItem("jobLevels"))
+      }
+
+      if (!window.sessionStorage.getItem("deps")) {
+        this.getRequest("/emp/basic/deps").then(resp => {
+          if (resp) {
+            this.allDeps = resp;
+            window.sessionStorage.setItem("deps", JSON.stringify(resp));
+          }
+        })
+      }else{
+        this.allDeps = JSON.parse(window.sessionStorage.getItem("deps"))
       }
     },
     showAddEmpView() {
       this.initPositions();
+      this.getMaxWordID();
       this.dialogVisible = true;
     },
     sizeChange(currentSize) {
