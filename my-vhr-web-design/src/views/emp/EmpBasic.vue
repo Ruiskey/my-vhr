@@ -3,8 +3,10 @@
     <div style="display: flex; justify-content: space-between">
       <div>
         <el-input placeholder="请输入员工名进行搜索, 可以直接回车搜索..." icon="el-icon-search"
-                  style="width: 300px; margin-right: 4px"></el-input>
-        <el-button icon="el-icon-search" type="primary">搜索</el-button>
+                  style="width: 300px; margin-right: 4px" v-model="keyword" @keydown.enter.native="initEmps"
+                  @clear="initEmps"
+                  clearable></el-input>
+        <el-button icon="el-icon-search" type="primary" @click="initEmps">搜索</el-button>
         <el-button type="primary">
           <i class="fa fa-angle-double-down" aria-hidden="true"></i>
           高级搜索
@@ -190,7 +192,8 @@ export default {
       emps: [],
       total: 0,
       page: 1,
-      size: 10
+      size: 10,
+      keyword: ''
     }
   },
   mounted() {
@@ -206,7 +209,7 @@ export default {
       this.initEmps();
     },
     initEmps() {
-      this.getRequest("/emp/basic/?page=" + this.page + "&size=" + this.size).then(resp => {
+      this.getRequest("/emp/basic/?page=" + this.page + "&size=" + this.size+"&keyword="+this.keyword).then(resp => {
         if (resp) {
           this.emps = resp.data;
           this.total = resp.total;
