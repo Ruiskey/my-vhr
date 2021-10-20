@@ -164,7 +164,7 @@
           <template slot-scope="scope">
             <el-button style="padding: 3px" size="mini">编辑</el-button>
             <el-button style="padding: 3px" size="mini" type="primary">查看高级资料</el-button>
-            <el-button style="padding: 3px" size="mini" type="danger">删除</el-button>
+            <el-button style="padding: 3px" size="mini" type="danger" @click="deleteEmp(scope.row)">删除</el-button>
           </template>
         </el-table-column>
 
@@ -294,11 +294,12 @@
                     trigger="manual"
                     content="这是一段内容,这是一段内容,这是一段内容,这是一段内容。"
                     v-model="popVisible">
-                  <el-tree :data="allDeps" :props="defaultProps" @node-click="handleNodeClick" default-expand-all></el-tree>
+                  <el-tree :data="allDeps" :props="defaultProps" @node-click="handleNodeClick"
+                           default-expand-all></el-tree>
                   <div slot="reference" style="width: 150px; height: 26px; border-radius: 5px; display: inline-flex;
                       font-size: 13px;border: 1px solid #dedede; cursor: pointer; align-items: center;
                       padding-left: 8px; box-sizing: border-box" @click="showDepView">
-                    {{inputDepName}}
+                    {{ inputDepName }}
                   </div>
                 </el-popover>
               </el-form-item>
@@ -503,7 +504,7 @@ export default {
         gender: [{required: true, message: '请输入性别', trigger: 'blur'}],
         birthday: [{required: true, message: '请输入出生日期', trigger: 'blur'}],
         idCard: [{required: true, message: '请输入身份证', trigger: 'blur'}, {
-          pattern:/(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
+          pattern: /(^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$)|(^[1-9]\d{5}\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{2}$)/,
           message: '身份证号码格式不正确',
           trigger: 'blur'
         }],
@@ -513,8 +514,8 @@ export default {
         politicId: [{required: true, message: '请输入政治面貌', trigger: 'blur'}],
         email: [{required: true, message: '请输入邮箱', trigger: 'blur'},
           {
-            type:'email',
-            message:'邮箱格式不正确',
+            type: 'email',
+            message: '邮箱格式不正确',
             trigger: 'blur'
           }],
         phone: [{required: true, message: '请输入电话', trigger: 'blur'}],
@@ -543,10 +544,28 @@ export default {
     this.initData();
   },
   methods: {
+    deleteEmp(data) {
+      this.$confirm('此操作将永久删除' + data.name + ', 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteRequest("/employee/basic/" + data.id).then(resp => {
+          if (resp) {
+            this.initEmps();
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
     doAddEmp() {
-      this.$refs["empForm"].validate((valid)=>{
+      this.$refs["empForm"].validate((valid) => {
         if (valid) {
-          this.postRequest("/emp/basic/", this.emp).then(resp=>{
+          this.postRequest("/employee/basic/", this.emp).then(resp => {
             if (resp) {
               this.dialogVisible = false;
               this.initEmps();
@@ -564,7 +583,7 @@ export default {
       this.popVisible = !this.popVisible;
     },
     getMaxWordID() {
-      this.getRequest("/emp/basic/maxWorkID").then(resp => {
+      this.getRequest("/employee/basic/maxWorkID").then(resp => {
         if (resp) {
           this.emp.workID = resp.obj;
         }
@@ -572,7 +591,7 @@ export default {
     },
 
     initPositions() {
-      this.getRequest("/emp/basic/positions").then(resp => {
+      this.getRequest("/employee/basic/positions").then(resp => {
         if (resp) {
           this.positions = resp;
         }
@@ -581,45 +600,45 @@ export default {
     initData() {
       let nations = window.sessionStorage.getItem("nations");
       if (!nations) {
-        this.getRequest("/emp/basic/nations").then(resp => {
+        this.getRequest("/employee/basic/nations").then(resp => {
           if (resp) {
             this.nations = resp;
             window.sessionStorage.setItem("nations", JSON.stringify(resp));
           }
         })
-      }else{
+      } else {
         this.nations = JSON.parse(window.sessionStorage.getItem("nations"))
       }
 
       if (!window.sessionStorage.getItem("politicsStatus")) {
-        this.getRequest("/emp/basic/politicsStatus").then(resp => {
+        this.getRequest("/employee/basic/politicsStatus").then(resp => {
           if (resp) {
             this.politicsStatus = resp;
             window.sessionStorage.setItem("politicsStatus", JSON.stringify(resp));
           }
         })
-      }else{
+      } else {
         this.politicsStatus = JSON.parse(window.sessionStorage.getItem("politicsStatus"))
       }
       if (!window.sessionStorage.getItem("jobLevels")) {
-        this.getRequest("/emp/basic/jobLevels").then(resp => {
+        this.getRequest("/employee/basic/jobLevels").then(resp => {
           if (resp) {
             this.jobLevels = resp;
             window.sessionStorage.setItem("jobLevels", JSON.stringify(resp));
           }
         })
-      }else{
+      } else {
         this.jobLevels = JSON.parse(window.sessionStorage.getItem("jobLevels"))
       }
 
       if (!window.sessionStorage.getItem("deps")) {
-        this.getRequest("/emp/basic/deps").then(resp => {
+        this.getRequest("/employee/basic/deps").then(resp => {
           if (resp) {
             this.allDeps = resp;
             window.sessionStorage.setItem("deps", JSON.stringify(resp));
           }
         })
-      }else{
+      } else {
         this.allDeps = JSON.parse(window.sessionStorage.getItem("deps"))
       }
     },
@@ -637,7 +656,7 @@ export default {
       this.initEmps();
     },
     initEmps() {
-      this.getRequest("/emp/basic/?page=" + this.page + "&size=" + this.size + "&keyword=" + this.keyword).then(resp => {
+      this.getRequest("/employee/basic/?page=" + this.page + "&size=" + this.size + "&keyword=" + this.keyword).then(resp => {
         if (resp) {
           this.emps = resp.data;
           this.total = resp.total;
