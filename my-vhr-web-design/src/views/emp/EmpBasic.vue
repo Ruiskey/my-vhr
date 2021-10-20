@@ -17,7 +17,7 @@
           <i class="fa fa-level-up" aria-hidden="true"></i>
           导入数据
         </el-button>
-        <el-button type="success">
+        <el-button type="success" @click="exportData">
           <i class="fa fa-level-down" aria-hidden="true"></i>
           导出数据
         </el-button>
@@ -46,6 +46,12 @@
         <el-table-column
             prop="workID"
             label="工号"
+            align="left"
+            width="85">
+        </el-table-column>
+        <el-table-column
+            prop="gender"
+            label="性别"
             align="left"
             width="85">
         </el-table-column>
@@ -119,6 +125,18 @@
             width="100"
             align="left"
             label="聘用形式">
+        </el-table-column>
+        <el-table-column
+            prop="specialty"
+            width="100"
+            align="left"
+            label="专业">
+        </el-table-column>
+        <el-table-column
+            prop="school"
+            width="150"
+            align="left"
+            label="毕业院校">
         </el-table-column>
         <el-table-column
             prop="beginDate"
@@ -545,6 +563,9 @@ export default {
     this.initData();
   },
   methods: {
+    exportData() {
+      window.open('/employee/basic/export', '_parent');
+    },
     emptyEmp() {
       this.emp = {
         name: "",
@@ -566,7 +587,6 @@ export default {
         specialty: "",
         school: "",
         beginDate: "",
-        workState: "",
         workID: "",
         contractTerm: 2,
         conversionTime: "",
