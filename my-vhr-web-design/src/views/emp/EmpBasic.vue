@@ -9,8 +9,8 @@
                     @clear="initEmps"
                     clearable></el-input>
           <el-button icon="el-icon-search" type="primary" @click="initEmps">搜索</el-button>
-          <el-button type="primary">
-            <i class="fa fa-angle-double-down" aria-hidden="true"></i>
+          <el-button type="primary" @click="showAdvanceSearchView = !showAdvanceSearchView">
+            <i :class="showAdvanceSearchView ? 'fa fa-angle-double-up' : 'fa fa-angle-double-down'" aria-hidden="true"></i>
             高级搜索
           </el-button>
         </div>
@@ -36,8 +36,9 @@
           </el-button>
         </div>
       </div>
+      <transition name="slide-fade">
       <!--高级搜索-->
-      <div
+      <div v-show="showAdvanceSearchView"
           style="border: 1px solid #1e1782;border-radius: 5px;box-sizing: border-box;padding: 5px; margin: 10px 0px">
         <el-row>
           <el-col :span="5">
@@ -128,6 +129,7 @@
           </el-col>
         </el-row>
       </div>
+      </transition>
     </div>
     <div style="margin-top: 10px">
       <el-table
@@ -561,6 +563,7 @@ export default {
       page: 1,
       size: 10,
       keyword: '',
+      showAdvanceSearchView: false,
       importDataBtnIcon: 'el-icon-upload2',
       importDataBtnText: '导入数据',
       importDataDisabled: false,
@@ -865,5 +868,20 @@ export default {
 </script>
 
 <style scoped>
+  /* Enter and leave animations can use different */
+  /* durations and timing functions.              */
+  .slide-fade-enter-active {
+    transition: all .3s ease;
+  }
 
+  .slide-fade-leave-active {
+    transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+  }
+
+  .slide-fade-enter, .slide-fade-leave-to
+    /* .slide-fade-leave-active below version 2.1.8 */
+  {
+    transform: translateX(10px);
+    opacity: 0;
+  }
 </style>
