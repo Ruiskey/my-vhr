@@ -13,12 +13,19 @@
         </el-button>
       </div>
       <div>
-        <el-button type="success">
-          <i class="fa fa-level-up" aria-hidden="true"></i>
-          导入数据
-        </el-button>
-        <el-button type="success" @click="exportData">
-          <i class="fa fa-level-down" aria-hidden="true"></i>
+        <el-upload
+            style="display: inline-flex;margin-right: 8px;"
+            action="/employee/basic/import"
+            :show-file-list="false"
+            :before-upload="beforeUpload"
+            :on-error="onError"
+            :disabled="importDataDisabled"
+            :on-success="onSuccess">
+          <el-button type="success" :disabled="importDataDisabled" :icon="importDataBtnIcon">
+            {{importDataBtnText}}
+          </el-button>
+        </el-upload>
+        <el-button type="success" @click="exportData" icon="el-icon-download">
           导出数据
         </el-button>
         <el-button type="primary" icon="el-icon-plus" @click="showAddEmpView">
@@ -128,7 +135,7 @@
         </el-table-column>
         <el-table-column
             prop="specialty"
-            width="100"
+            width="150"
             align="left"
             label="专业">
         </el-table-column>
@@ -458,6 +465,9 @@ export default {
       page: 1,
       size: 10,
       keyword: '',
+      importDataBtnIcon: 'el-icon-upload2',
+      importDataBtnText: '导入数据',
+      importDataDisabled: false,
       dialogVisible: false,
       popVisible: false,
       nations: [],
@@ -563,6 +573,22 @@ export default {
     this.initData();
   },
   methods: {
+    onError(err, file, fileList) {
+      this.importDataBtnText = "导入数据";
+      this.importDataBtnIcon = "el-icon-upload2";
+      this.importDataDisabled = false;
+    },
+    onSuccess(response, file, fileList) {
+      this.importDataBtnText = "导入数据";
+      this.importDataBtnIcon = "el-icon-upload2";
+      this.importDataDisabled = false;
+      this.initEmps();
+    },
+    beforeUpload() {
+      this.importDataBtnText = "正在导入";
+      this.importDataBtnIcon = "el-icon-loading";
+      this.importDataDisabled = true;
+    },
     exportData() {
       window.open('/employee/basic/export', '_parent');
     },
